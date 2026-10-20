@@ -1,0 +1,139 @@
+{
+  "name": "Telegram AI Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c78a2651-4b2a-4454-9ac2-e04ffba64b71",
+      "name": "Telegram Trigger",
+      "webhookId": "e03c9b22-38c9-42ca-989a-f357d436b50b",
+      "credentials": {
+        "telegramApi": {
+          "id": "1bwnTviJ7nIHfq68",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        0
+      ],
+      "id": "17dfeb4b-d5b7-4486-ae25-72f0e0a2db1c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        224,
+        240
+      ],
+      "id": "29431106-a197-4840-9761-f2553ef595bd",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "vlph6Bca1dWSM608",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "97b8fe61-499c-4f8a-bca7-72252ef45ec9",
+      "name": "Send a text message",
+      "webhookId": "56f87854-2091-49f6-ba20-a810c7ff0d93",
+      "credentials": {
+        "telegramApi": {
+          "id": "1bwnTviJ7nIHfq68",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "df399cf5-2fc1-4d84-9af2-26863e7da605",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"
+  },
+  "nodeGroups": [],
+  "id": "gNnBNusOTdvevPD9",
+  "tags": []
+}
