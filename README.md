@@ -12,4 +12,12 @@ My first experiment with n8n and AI. I built a Telegram bot that uses an AI mode
 
 - [View the project](./n8n-telegram-ai-chatbot/README.md)
 
+### 2. Restaurant Order & Inventory Automation
+
+A restaurant order management project built with n8n, Telegram, and Google Sheets.
+
+It connects three workflows to handle incoming orders, manage order statuses, and track ingredient inventory. The goal is to automate the process from receiving an order to checking stock and recording inventory changes.
+
+- [View the project](./restaurant-order-inventory-automation/README.md)
+
 I'll add more experiments as I learn and build new things.
