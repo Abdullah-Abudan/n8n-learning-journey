@@ -89,6 +89,34 @@ The general process is:
 7. If stock is sufficient, inventory is updated and the order can be marked as `Done`.
 8. If stock is insufficient, the order remains `Pending` and the manager is informed.
 
+## Screenshots
+
+The following screenshots provide a closer look at the main workflows and how the system handles restaurant orders and inventory.
+
+### Workflow Overview
+
+**Order Intake**
+
+![Order Intake Workflow](./screenshots/01-order-intake.png)
+
+**Order Status Management**
+
+![Order Status Management Workflow](./screenshots/02-order-status-management.png)
+
+**Inventory Management**
+
+![Inventory Management Workflow](./screenshots/03-inventory-management.png)
+
+### System Operations
+
+**Telegram Order Notification**
+
+![Telegram Order Notification](./screenshots/04-telegram-order-notification.png)
+
+**Google Sheets Database**
+
+![Google Sheets Database](./screenshots/05-google-sheets-database.png)
+
 ## Data Storage
 
 Google Sheets is used as the project's initial data storage layer.
