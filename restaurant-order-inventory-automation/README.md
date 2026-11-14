@@ -45,6 +45,8 @@ When a manager marks an order as completed, the workflow calls the Inventory Man
 
 If there is not enough stock, the order remains pending and the manager receives a notification explaining which ingredients are unavailable.
 
+If the order already has recorded stock movements, the workflow prevents another inventory deduction. Instead, it sends a manual review notification to the manager, and the order remains `Pending` until the issue is reviewed.
+
 **Main responsibilities:**
 - Receive and parse Telegram commands.
 - Verify manager authorization.
@@ -63,6 +65,8 @@ If all required ingredients are available, the workflow updates the inventory an
 
 If any ingredient is unavailable or insufficient, it returns the relevant information without proceeding with the stock deduction.
 
+Before processing an order, the workflow checks the Stock Movements sheet for existing movements linked to the same order ID. If movements are found, the workflow stops processing the order to prevent duplicate inventory deductions and returns a manual review result.
+
 **Main responsibilities:**
 - Parse order items and quantities.
 - Retrieve product recipes.
@@ -70,6 +74,7 @@ If any ingredient is unavailable or insufficient, it returns the relevant inform
 - Check available inventory.
 - Update ingredient quantities.
 - Record stock movements.
+- Check for existing stock movements before processing an order.
 - Return the processing result to the calling workflow.
 
 ## How the Workflows Work Together
@@ -160,6 +165,20 @@ The project follows these rules:
 - Cancelling a pending order does not affect inventory.
 - A completed order cannot be cancelled through the current status management flow.
 
+## Testing
+
+## Testing
+
+The workflows were tested using different order scenarios to check the order status and inventory behavior.
+
+| Test | Result |
+|---|---|
+| Order with sufficient stock | The order was marked as `Done`, and the required ingredient quantities were deducted from inventory. |
+| Order with insufficient stock | The order remained `Pending`, and the manager received an insufficient stock notification. |
+| Reprocessing an order with existing stock movements | The workflow stopped the repeated deduction, and the manager received a manual review notification. |
+
+All three test scenarios produced the expected results.
+
 ## Setup and Configuration
 
 To run this project, you need:
@@ -178,6 +197,14 @@ The workflow exports and configuration instructions will be maintained in this r
 The project is under development.
 
 The three main workflows have been created and connected. Further work focuses on improving the customer ordering experience, testing different order scenarios, and strengthening the reliability of inventory updates.
+
+## Reliability and Limitations
+
+The workflow checks for existing stock movements to prevent duplicate inventory deductions when an order is processed again.
+
+However, Google Sheets does not support database transactions. A workflow failure during inventory updates may leave some records updated while others are not. Processing multiple orders at the same time may also cause inventory inconsistencies.
+
+These cases may require manual review and inventory reconciliation.
 
 ## Future Improvements
 
