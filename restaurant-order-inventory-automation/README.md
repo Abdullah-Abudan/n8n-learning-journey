@@ -53,6 +53,7 @@ If the order already has recorded stock movements, the workflow prevents another
 - Find the requested order.
 - Process completion and cancellation requests.
 - Trigger inventory processing before completing an order.
+- Prevent repeated inventory deductions and request manual review when existing stock movements are found.
 - Reject invalid requests and unsupported status changes.
 
 ### 03 - Inventory Management
@@ -164,8 +165,6 @@ The project follows these rules:
 - An order cannot be completed if the required stock is insufficient.
 - Cancelling a pending order does not affect inventory.
 - A completed order cannot be cancelled through the current status management flow.
-
-## Testing
 
 ## Testing
 
