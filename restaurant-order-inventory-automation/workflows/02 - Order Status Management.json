@@ -79,8 +79,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -640,
-        64
+        -608,
+        48
       ],
       "id": "ee8112f5-2d34-4b43-9df7-6d12a818a2db",
       "name": "Send a text message - Unauthorized Access",
@@ -211,7 +211,7 @@
       "typeVersion": 4.7,
       "position": [
         -384,
-        -704
+        -624
       ],
       "id": "dc905811-f440-48e2-9063-4691f9eeafcc",
       "name": "Google Sheets – Find Order",
@@ -235,7 +235,7 @@
       "typeVersion": 1.2,
       "position": [
         64,
-        -624
+        -544
       ],
       "id": "0ef3b132-df94-4ed6-9c1b-9d07d76b5e6a",
       "name": "Send a text message",
@@ -275,7 +275,7 @@
       "typeVersion": 2.3,
       "position": [
         64,
-        -816
+        -736
       ],
       "id": "d44f711a-495a-42ae-b1aa-74db59356102",
       "name": "Is Pending?"
@@ -296,7 +296,7 @@
       "typeVersion": 1.2,
       "position": [
         336,
-        -768
+        -688
       ],
       "id": "b3b71abe-b36b-47c1-82fa-7814e292e67c",
       "name": "Send a text message1",
@@ -379,7 +379,7 @@
       "typeVersion": 2.3,
       "position": [
         -192,
-        -704
+        -624
       ],
       "id": "ba09166f-ec0a-40e0-97e5-4f87fa5f66ce",
       "name": "Order Found?"
@@ -518,8 +518,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -304,
-        80
+        -352,
+        -16
       ],
       "id": "97f1caeb-62e0-4300-8528-489ebf2b95dc",
       "name": "Send a text message4",
@@ -642,8 +642,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        848,
-        -1072
+        768,
+        -896
       ],
       "id": "89f33508-b459-4905-b598-b7eb390968ce",
       "name": "Update Order - Done",
@@ -674,7 +674,8 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "status": "Cancelled"
+            "status": "Cancelled",
+            "orderId": "={{ $json.orderId }}"
           },
           "matchingColumns": [
             "orderId"
@@ -823,7 +824,7 @@
       "typeVersion": 1.4,
       "position": [
         336,
-        -960
+        -880
       ],
       "id": "8f12ea7b-e568-417e-97df-4767a962c6a5",
       "name": "Call '03 - Inventory Management'"
@@ -857,7 +858,7 @@
       "typeVersion": 2.3,
       "position": [
         560,
-        -960
+        -880
       ],
       "id": "ad018cc9-89c0-44cf-ba12-3661e71f2715",
       "name": "Inventory Successful?"
@@ -877,12 +878,70 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        864,
-        -880
+        1040,
+        -592
       ],
       "id": "a6ccb532-d77b-4e04-9b4d-7aedbe03d6f4",
       "name": "Send a text message5",
       "webhookId": "36231edf-9a91-44a6-8e09-5e953239733c",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "78da9a93-b4e9-42d7-8106-c7c92a5e8d9b",
+              "leftValue": "={{ $json.alreadyProcessed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        -720
+      ],
+      "id": "906a24c1-d3d9-40ed-b1fa-549d07d58c40",
+      "name": "Check Already Processed?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.chatId }}",
+        "text": "=⚠️ Order Requires Manual Review\n\nThis order has existing stock movements.\n\nNo additional inventory was deducted.\nPlease review the stock movements before retrying.\n\nOrder remains Pending.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -800
+      ],
+      "id": "c8d31997-2dda-4408-8a70-cfe9f5786f37",
+      "name": "Notify - Existing Stock Movements",
+      "webhookId": "7144269b-eaf1-40d5-b7fc-0b0e4804bb5d",
       "credentials": {
         "telegramApi": {
           "id": "n3S2EPgVEeQkV34w",
@@ -1074,6 +1133,24 @@
         ],
         [
           {
+            "node": "Check Already Processed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Already Processed?": {
+      "main": [
+        [
+          {
+            "node": "Notify - Existing Stock Movements",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Send a text message5",
             "type": "main",
             "index": 0
@@ -1087,7 +1164,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "6f318604-c8d7-4f77-a7a9-386a7744774c",
+  "versionId": "ad1f3c39-ac06-4de7-8ac5-9afeff88b028",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"

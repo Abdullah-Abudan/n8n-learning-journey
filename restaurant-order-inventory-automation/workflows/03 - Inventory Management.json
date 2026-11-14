@@ -17,7 +17,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.3,
       "position": [
-        -1664,
+        -1760,
         -160
       ],
       "id": "afbc79e8-487e-49ea-83e6-48bc0c0958e3",
@@ -30,8 +30,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1168,
-        -160
+        -912,
+        -48
       ],
       "id": "92859a56-3088-4dd1-afc9-2324868b7666",
       "name": "Parse Order Items"
@@ -57,8 +57,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -1408,
-        -160
+        -1088,
+        -48
       ],
       "id": "8c116818-d3e3-4eef-8dd9-f2fcaa669d17",
       "name": "Get All Recipes",
@@ -76,8 +76,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -944,
-        -160
+        -688,
+        -48
       ],
       "id": "314a3961-2b95-4fc2-8d3f-a646feab233b",
       "name": "Calculate Required Ingredients"
@@ -103,8 +103,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -720,
-        -160
+        -464,
+        -48
       ],
       "id": "08b1208a-b4d9-4c49-be69-63c5f5616af4",
       "name": "Get All Inventory",
@@ -122,8 +122,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -496,
-        -160
+        -240,
+        -48
       ],
       "id": "4add15f3-7818-4c3d-8114-6a81db9d19e6",
       "name": "Validate Stock"
@@ -135,8 +135,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
-        -160
+        -48,
+        -48
       ],
       "id": "d7043fb6-c2ad-460b-94d9-fd34362fcc15",
       "name": "Check Stock Availability"
@@ -168,8 +168,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -80,
-        -160
+        176,
+        -48
       ],
       "id": "fe240aef-177c-4b32-9be7-49af1dc0362f",
       "name": "Stock Available?"
@@ -251,8 +251,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        112,
-        -272
+        368,
+        -160
       ],
       "id": "85ad53b7-f3ae-4d42-971f-4fcc163a2ee5",
       "name": "Update Inventory",
@@ -368,8 +368,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        336,
-        -272
+        592,
+        -160
       ],
       "id": "36732b5d-8c7c-4566-b3c6-e6c2de7605b7",
       "name": "Record Stock Movement",
@@ -387,8 +387,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        560,
-        -272
+        816,
+        -160
       ],
       "id": "388da743-4258-4f96-bde7-caeb9fa5ad86",
       "name": "Return Success"
@@ -400,11 +400,100 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        112,
-        -16
+        368,
+        96
       ],
       "id": "34489264-0923-4c6f-b49c-c95fd762547b",
       "name": "Return Failure"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1168479075,
+          "mode": "list",
+          "cachedResultName": "Stock Movements",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1168479075"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "orderId",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1584,
+        -160
+      ],
+      "id": "37e87064-fc0e-45a9-80bc-a11469388449",
+      "name": "Check Existing Stock Movements",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "16137225-9302-46e2-afb8-24498a0b596c",
+              "leftValue": "={{ $json.movementId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1392,
+        -160
+      ],
+      "id": "2c4ea66f-d50b-4489-b27b-2aea8e09ae29",
+      "name": "IF: Existing Movement?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const orderId = $('When Executed by Another Workflow').first().json.orderId;\n\nreturn [{\n  json: {\n    success: false,\n    alreadyProcessed: true,\n    orderId,\n    message: 'Existing stock movements found. No additional deduction was made. Manual review is required.'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        -320
+      ],
+      "id": "6da2ce5e-586b-4b3e-a93a-ca5eb7168fe4",
+      "name": "Return Already Processed"
     }
   ],
   "pinData": {
@@ -422,7 +511,7 @@
       "main": [
         [
           {
-            "node": "Get All Recipes",
+            "node": "Check Existing Stock Movements",
             "type": "main",
             "index": 0
           }
@@ -534,6 +623,35 @@
           }
         ]
       ]
+    },
+    "Check Existing Stock Movements": {
+      "main": [
+        [
+          {
+            "node": "IF: Existing Movement?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Existing Movement?": {
+      "main": [
+        [
+          {
+            "node": "Return Already Processed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get All Recipes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -541,7 +659,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "0ebd65d4-f598-476a-bb2d-3b261ce16b4a",
+  "versionId": "837d3e54-bf2d-4d8d-98d7-fcc49d93915c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"

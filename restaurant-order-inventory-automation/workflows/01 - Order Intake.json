@@ -112,7 +112,27 @@
           "conditions": [
             {
               "id": "7643943d-a419-44a5-9141-770c97966d34",
-              "leftValue": "={{ $json.customerName }} and {{ $json.phone }} and {{ $json.items }}",
+              "leftValue": "={{ $json.customerName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c23a7563-6014-4e41-80b9-efc5deed37f8",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5a713057-05a6-4cc9-b4f9-505d736a2c23",
+              "leftValue": "={{ $json.items }}",
               "rightValue": "",
               "operator": {
                 "type": "string",
@@ -350,7 +370,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "7dbd5d11-7185-4a1f-a0f8-30184457c178",
+  "versionId": "8bca7318-6c63-48b8-bf66-87066fbe7756",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"
