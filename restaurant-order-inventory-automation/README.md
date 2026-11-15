@@ -45,7 +45,7 @@ When a manager marks an order as completed, the workflow calls the Inventory Man
 
 If there is not enough stock, the order remains pending and the manager receives a notification explaining which ingredients are unavailable.
 
-If the order already has recorded stock movements, the workflow prevents another inventory deduction. Instead, it sends a manual review notification to the manager, and the order remains `Pending` until the issue is reviewed.
+If the order already has recorded stock movements, the inventory workflow verifies them against the ingredient quantities calculated from the recipes. If the recorded movements match the expected quantities, it confirms the previous deduction without updating inventory again, allowing the order status to be updated to `Done`. If the movements are incomplete or do not match, the workflow requests manual review, and the order remains `Pending`.
 
 **Main responsibilities:**
 - Receive and parse Telegram commands.
@@ -53,7 +53,8 @@ If the order already has recorded stock movements, the workflow prevents another
 - Find the requested order.
 - Process completion and cancellation requests.
 - Trigger inventory processing before completing an order.
-- Prevent repeated inventory deductions and request manual review when existing stock movements are found.
+- Verify existing stock movements before allowing an order to be completed.
+- Prevent duplicate inventory deductions and request manual review when recorded movements do not match the expected quantities.
 - Reject invalid requests and unsupported status changes.
 
 ### 03 - Inventory Management
@@ -66,7 +67,7 @@ If all required ingredients are available, the workflow updates the inventory an
 
 If any ingredient is unavailable or insufficient, it returns the relevant information without proceeding with the stock deduction.
 
-Before processing an order, the workflow checks the Stock Movements sheet for existing movements linked to the same order ID. If movements are found, the workflow stops processing the order to prevent duplicate inventory deductions and returns a manual review result.
+Before processing an order, the workflow checks the Stock Movements sheet for existing movements linked to the same order ID. If previous movements are found, it recalculates the expected ingredient quantities from the recipes and compares them with the recorded movements. If they match, the workflow confirms that the inventory was already deducted and returns a successful result without making another deduction. If the movements are incomplete or do not match, it returns a manual review result.
 
 **Main responsibilities:**
 - Parse order items and quantities.
@@ -77,6 +78,8 @@ Before processing an order, the workflow checks the Stock Movements sheet for ex
 - Record stock movements.
 - Check for existing stock movements before processing an order.
 - Return the processing result to the calling workflow.
+- Validate existing stock movements against the expected ingredient quantities.
+- Confirm previously processed deductions without updating inventory again.
 
 ## How the Workflows Work Together
 
