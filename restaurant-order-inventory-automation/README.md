@@ -106,25 +106,25 @@ The following screenshots provide a closer look at the main workflows and how th
 
 **Order Intake**
 
-![Order Intake Workflow](./screenshots/01-order-intake.png)
+![Order Intake Workflow](./screenshots/workflows/01-order-intake.png)
 
 **Order Status Management**
 
-![Order Status Management Workflow](./screenshots/02-order-status-management.png)
+![Order Status Management Workflow](./screenshots/workflows/02-order-status-management.png)
 
 **Inventory Management**
 
-![Inventory Management Workflow](./screenshots/03-inventory-management.png)
+![Inventory Management Workflow](./screenshots/workflows/03-inventory-management.png)
 
 ### System Operations
 
 **Telegram Order Notification**
 
-![Telegram Order Notification](./screenshots/04-telegram-order-notification.png)
+![Telegram Order Notification](./screenshots/testing/04-telegram-order-notification.png)
 
 **Google Sheets Database**
 
-![Google Sheets Database](./screenshots/05-google-sheets-database.png)
+![Google Sheets Database](./screenshots/testing/05-google-sheets-database.png)
 
 ## Data Storage
 
