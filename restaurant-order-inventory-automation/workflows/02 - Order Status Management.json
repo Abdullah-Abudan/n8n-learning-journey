@@ -928,7 +928,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Parse Command').item.json.chatId }}",
-        "text": "=⚠️ Order Requires Manual Review\n\nThis order has existing stock movements.\n\nNo additional inventory was deducted.\nPlease review the stock movements before retrying.\n\nOrder remains Pending.",
+        "text": "=⚠️ Order Requires Manual Review\n\nThis order ({{ $json.orderId }}) has existing stock movements.\n\nNo additional inventory was deducted.\nPlease review the stock movements before retrying.\n\nOrder remains Pending.",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -942,6 +942,54 @@
       "id": "c8d31997-2dda-4408-8a70-cfe9f5786f37",
       "name": "Notify - Existing Stock Movements",
       "webhookId": "7144269b-eaf1-40d5-b7fc-0b0e4804bb5d",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ Order Completed Successfully!\n\n🆔 Order ID: {{ $json.orderId }}\n📦 Order Status: Done\n📊 Inventory: Stock deducted successfully.\n\nThe order has been completed and the inventory has been updated.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -1024
+      ],
+      "id": "f0f0d464-28fe-4f48-ab7b-85b12a85734e",
+      "name": "Send Order Completion Confirmation",
+      "webhookId": "23e08b41-293c-4099-8d27-18ddf8cf7ffc",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=\n❌ Order Cancelled Successfully\n\n🆔 Order ID: {{ $json.orderId }}\n📋 Order Status: Cancelled\n\nThe order has been cancelled successfully.\nNo inventory quantities were deducted.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        -416
+      ],
+      "id": "155dcf6b-ca08-4e7f-93fe-5d4b1a42afe8",
+      "name": "Send Order Cancellation Confirmation",
+      "webhookId": "23e08b41-293c-4099-8d27-18ddf8cf7ffc",
       "credentials": {
         "telegramApi": {
           "id": "n3S2EPgVEeQkV34w",
@@ -1157,6 +1205,28 @@
           }
         ]
       ]
+    },
+    "Update Order - Done": {
+      "main": [
+        [
+          {
+            "node": "Send Order Completion Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order - Cancelled": {
+      "main": [
+        [
+          {
+            "node": "Send Order Cancellation Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -1164,7 +1234,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "ad1f3c39-ac06-4de7-8ac5-9afeff88b028",
+  "versionId": "e15bd013-b813-4cac-90b9-acab3572cb69",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"
