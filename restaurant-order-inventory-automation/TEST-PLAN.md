@@ -230,7 +230,10 @@ All expected results were verified successfully.
 - No new stock movements are recorded.
 
 **Actual Result:**
-Pending verification.
+- The system rejected the completion request for the Cancelled order.
+- The order status remained Cancelled.
+- No inventory deduction was performed.
+- No new stock movements were recorded.
 
 **Status:** Passed
 
