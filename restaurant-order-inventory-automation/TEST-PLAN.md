@@ -343,3 +343,125 @@ Pending verification.
 **Evidence:**
 - `screenshots/testing/TC-12-unauthorized-manager.jpg`
 
+### TC-13 — Recovery with Matching Movements
+
+**Test Data:**
+- Order: Previously processed order
+- Existing Stock Movements: Matching recipe quantities
+- Command: done
+
+**Expected Result:**
+- The system validates existing stock movements.
+- Recovery succeeds without duplicate inventory deduction.
+- No additional stock movements are recorded.
+
+**Actual Result:**
+- The system successfully validated the existing stock movements.
+- Recovery completed successfully.
+- No duplicate inventory deduction occurred.
+
+**Status:** Passed
+
+**Evidence:**
+- `screenshots/testing/TC-13-recovery-matching-movements.png`
+
+
+### TC-14 — Recovery with Mismatched Movements
+
+**Expected Result:**
+- The system detects mismatched stock movements.
+- Recovery is rejected.
+- No additional inventory deduction occurs.
+
+**Actual Result:**
+- The system detected mismatched existing stock movements.
+- Recovery validation failed as expected.
+- The system returned a Manual Review response.
+- No additional inventory deduction was performed.
+
+**Status:** Passed
+
+**Evidence:**
+- `screenshots/testing/TC-14-recovery-mismatched-movements.png`
+- `screenshots/testing/TC-14-recovery-mismatched-movements-sheet.png`
+
+### TC-15 — Recovery with Incomplete Movements
+
+**Test Data:**
+- Product: Burger
+- Order Quantity: 1
+- Existing Stock Movement: Bread — 1 OUT
+- Missing Movement: Beef Patty
+
+**Expected Result:**
+- The system detects incomplete existing stock movements.
+- Recovery is rejected.
+- No additional inventory deduction occurs.
+- The order remains Pending.
+- A Manual Review notification is returned.
+
+**Actual Result:**
+- The system detected existing incomplete stock movements.
+- Telegram returned an Order Requires Manual Review notification.
+- No additional inventory was deducted.
+- The order remained Pending.
+
+**Status:** Passed
+
+**Evidence:**
+- `screenshots/testing/TC-15-recovery-incomplete-movements.png`
+- `screenshots/testing/TC-15-recovery-incomplete-movements-sheet.png`
+
+
+
+### TC-16 — Zero or Negative Product Quantity
+
+**Test Data:**
+- Product: Burger
+- Quantities Tested: 0 and -1
+
+**Expected Result:**
+- The system should reject zero and negative quantities.
+- Invalid orders should not be completed.
+- Inventory must remain unchanged.
+- No stock movements should be recorded.
+
+**Actual Result:**
+- Workflow 01 accepted both quantities and created orders.
+- Workflow 03 rejected quantity 0 with: `Invalid product or quantity`.
+- Workflow 03 rejected quantity -1 with: `Invalid item format`.
+- Neither order was completed.
+
+**Status:** Passed
+
+**Note:**
+Input validation is handled during inventory processing rather than at order submission.
+
+**Evidence:**
+- `screenshots/testing/TC-16-zero-quantity-rejected.png`
+- `screenshots/testing/TC-16-negative-quantity-rejected.png`
+
+### TC-17 — Missing Product Recipe
+
+**Test Data:**
+- Product: Test Product
+- Quantity: 2
+- Order ID: ORD-2026-11-21-583
+
+**Expected Result:**
+- The system should detect that the product has no recipe.
+- The order should not be completed.
+- Inventory quantities should remain unchanged.
+- No stock movements should be recorded.
+
+**Actual Result:**
+- The order was successfully created with PENDING status.
+- Workflow 03 returned: `Recipe not found for: Test Product`.
+- The order remained PENDING.
+- Inventory quantities remained unchanged.
+- No stock movements were recorded.
+
+**Status:** Passed
+
+**Evidence:**
+- `screenshots/testing/TC-17-missing-product-recipe.png`
