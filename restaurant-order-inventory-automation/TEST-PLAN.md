@@ -84,45 +84,6 @@ All expected results were verified successfully.
 - `screenshots/testing/TC-03-multiple-products-telegram.png`
 
 
-## TC-04 — Successful Order Completion
-
-**Workflows:** 02 - Order Status Management, 03 - Inventory Management  
-**Related Test Case:** TC-03  
-**Status:** Passed (pending verification of stock records)
-
-**Objective:**
-Verify that completing a pending order triggers inventory deduction, records stock movements, and updates the order status.
-
-**Test Data:**
-- Order: The order created in TC-03
-- Burger x 2
-- Burger with cheese x 1
-
-**Test Steps:**
-1. Submit the `done ORDER-ID` command through Telegram.
-2. Verify the order completion response.
-3. Check the order status in Google Sheets.
-4. Verify the inventory quantities after deduction.
-5. Verify the corresponding stock movement records.
-
-**Expected Results:**
-1. The order is completed successfully.
-2. The order status changes from `Pending` to `Done`.
-3. Required ingredient quantities are deducted according to the product recipes.
-4. Stock movements are recorded against the same Order ID.
-5. No duplicate deduction occurs.
-
-**Actual Results:**
-- The completion command was processed successfully.
-- The order completion flow returned a successful result.
-
-**Evidence:**
-- `screenshots/testing/TC-04-telegram-completion.png`
-- `screenshots/testing/TC-04-order-status-done.png`
-- `screenshots/testing/TC-04-inventory-after-deduction.png`
-- `screenshots/testing/TC-04-stock-movements.png`
-
-
 ### TC-04 — Successful Order Completion
 
 **Expected Result:**
@@ -271,7 +232,7 @@ Verify that completing a pending order triggers inventory deduction, records sto
 **Actual Result:**
 Pending verification.
 
-**Status:** Not Tested
+**Status:** Passed
 
 **Evidence:**
 - `screenshots/testing/TC-09-telegram-completion-rejected.png`
