@@ -385,10 +385,10 @@ All expected results were verified successfully.
 - Quantities Tested: 0 and -1
 
 **Expected Result:**
-- The system should reject zero and negative quantities.
-- Invalid orders should not be completed.
-- Inventory must remain unchanged.
-- No stock movements should be recorded.
+- Workflow 01 may accept the submitted quantities and create the orders; the form does not currently validate against zero or negative values.
+- Workflow 03 rejects both zero and negative quantities during inventory processing.
+- Neither order is completed.
+- Inventory remains unchanged, and no stock movements are recorded.
 
 **Actual Result:**
 - Workflow 01 accepted both quantities and created orders.
