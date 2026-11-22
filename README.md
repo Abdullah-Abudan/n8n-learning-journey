@@ -16,7 +16,7 @@ My first experiment with n8n and AI. I built a Telegram bot that uses an AI mode
 
 A restaurant order management project built with n8n, Telegram, and Google Sheets.
 
-It connects three workflows to handle incoming orders, manage order statuses, and track ingredient inventory. The goal is to automate the process from receiving an order to checking stock and recording inventory changes.
+It connects three workflows to handle incoming orders, manage order statuses, and track ingredient inventory. The goal is to automate the process from receiving an order to checking stock and recording inventory changes. The project also includes a test plan with 17 test cases and screenshots documenting key steps and results.
 
 - [View the project](./restaurant-order-inventory-automation/README.md)
 
