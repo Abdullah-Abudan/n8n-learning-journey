@@ -157,11 +157,15 @@ Keeping recipes and inventory in separate sheets makes it easier to update produ
 ```text
 restaurant-order-inventory-automation/
 ├── README.md
+├── TEST-PLAN.md
 ├── screenshots/
+│   ├── workflows/
+│   └── testing/
 └── workflows/
+    ├── 01 - Order Intake.json
+    ├── 02 - Order Status Management.json
+    └── 03 - Inventory Management.json
 ```
-
-The `workflows` directory will contain the exported n8n workflows, while `screenshots` will contain selected images showing the system and its main processes.
 
 ## Current Business Rules
 
@@ -175,15 +179,11 @@ The project follows these rules:
 
 ## Testing
 
-The workflows were tested using different order scenarios to check the order status and inventory behavior.
+The project was exercised against **17 test cases (TC-01 to TC-17)** covering order submission, required fields, multiple products, completion, stock validation, cancellation, Telegram command handling, manager authorization, recovery checks, invalid quantities, and missing product recipes.
 
-| Test | Result |
-|---|---|
-| Order with sufficient stock | The order was marked as `Done`, and the required ingredient quantities were deducted from inventory. |
-| Order with insufficient stock | The order remained `Pending`, and the manager received an insufficient stock notification. |
-| Reprocessing an order with existing stock movements | The workflow stopped the repeated deduction, and the manager received a manual review notification. |
+The expected and actual results for each case, along with the available evidence, are documented in [TEST-PLAN.md](./TEST-PLAN.md).
 
-All three test scenarios produced the expected results.
+One validation detail is worth noting: the order form currently accepts zero and negative quantities, while Inventory Management rejects them during processing. These orders are not completed.
 
 ## Setup and Configuration
 
@@ -194,15 +194,13 @@ To run this project, you need:
 - A Google account with access to Google Sheets.
 - The required Telegram and Google Sheets credentials configured in n8n.
 
-The workflow exports and configuration instructions will be maintained in this repository.
+To configure the project, create the four Google Sheets tabs listed above, import the three JSON files from the `workflows` directory into n8n, and set up the required Telegram and Google Sheets credentials. Check the sheet references and workflow connections, then configure the authorized manager's Telegram ID before testing with sample data.
 
 **Important:** Credentials, bot tokens, personal chat IDs, and other private configuration values must not be included in the exported workflow files.
 
 ## Current Status
 
-The project is under development.
-
-The three main workflows have been created and connected. Further work focuses on improving the customer ordering experience, testing different order scenarios, and strengthening the reliability of inventory updates.
+The three main workflows have been created and connected. The project has been exercised with 17 documented test cases, with results and supporting evidence recorded in the test plan.
 
 ## Reliability and Limitations
 
