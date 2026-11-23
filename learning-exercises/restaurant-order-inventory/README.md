@@ -15,10 +15,19 @@ The workflow brings together order entry, Telegram messages, Google Sheets, and 
 
 The workflow contains 22 nodes and keeps the structure of the original lesson exercise rather than being redesigned as a separate system.
 
-## Files
+## Screenshots
 
-- `Restaurant Order & Inventory Management.json` — the n8n workflow export.
-- `screenshots/` — reserved for screenshots of the workflow and its Google Sheets.
+### Workflow overview
+
+![Restaurant order and inventory workflow](./screenshots/workflow-overview.png)
+
+### Orders sheet
+
+![Google Sheets orders sheet](./screenshots/orders-sheet.png)
+
+### Stock sheet
+
+![Google Sheets stock sheet](./screenshots/stock-sheet.png)
 
 ## Import and configuration
 
@@ -34,7 +43,9 @@ Before using it in your own n8n instance:
 
 ## A note about the original workflow
 
-This is a lesson-based exercise, not a production-ready restaurant system. In the original flow, both the `done` and `cancel` routes pass through the same order-update path, which can also continue to the ingredient-handling steps. Keep this behavior in mind when testing; cancellation should be separated from stock deduction before using a workflow for real orders.
+This is a lesson-based exercise, not a production-ready restaurant system.
+
+Both `done` and `cancel` commands pass through the same order update path. After updating the order, the workflow checks its status. Ingredient deductions are triggered only when the status is `done`; cancelled orders do not proceed to the stock deduction steps.
 
 ---
 
