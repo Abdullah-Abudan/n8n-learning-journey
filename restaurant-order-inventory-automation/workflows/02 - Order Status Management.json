@@ -1,0 +1,1245 @@
+{
+  "name": "02 - Order Status Management",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -1216,
+        -144
+      ],
+      "id": "705847ef-ecb2-447a-8292-0e173c1f9395",
+      "name": "Telegram Trigger",
+      "webhookId": "6598b822-d175-4dc3-be27-b351e24228d7",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const update = $input.first().json;\nconst message = update.message ?? {};\n\nconst text = (message.text ?? '').trim();\nconst match = text.match(\n  /^(done|cancel)\\s+(ORD-[A-Za-z0-9-]+)$/i\n);\n\nreturn [{\n  json: {\n    chatId: message.chat?.id,\n    senderId: message.from?.id,\n    senderName: message.from?.first_name ?? 'Unknown',\n    command: match ? match[1].toLowerCase() : 'invalid',\n    orderId: match ? match[2].toUpperCase() : null,\n    originalText: text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        -144
+      ],
+      "id": "8e2c962b-604f-4a7b-8fa1-0361d85e2c5d",
+      "name": "Parse Command"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c7ba7cf0-3b1f-410a-baa7-8a47d582840c",
+              "leftValue": "={{ $json.senderId }}",
+              "rightValue": 601624105,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -848,
+        -144
+      ],
+      "id": "aa1814ff-ab0c-46fb-97df-e952599603b7",
+      "name": "Authorize Manager"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{`⛔ Unauthorized Access\n\nYou are not allowed to manage restaurant orders.`}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        48
+      ],
+      "id": "ee8112f5-2d34-4b43-9df7-6d12a818a2db",
+      "name": "Send a text message - Unauthorized Access",
+      "webhookId": "5fdd151a-fb7c-44e2-ad21-8a414fb61f0e",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "done",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "eef60a9b-70fa-4f62-b52b-a6b49d021e63"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Complete Order"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b6dfece1-f4bf-403a-b830-ccb2081db962",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cancel Order"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "73acad55-6ba8-4172-a865-29448c92da69",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "invalid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Invalid Command"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        -288
+      ],
+      "id": "7a067e74-f8be-443e-acf2-d98a19a2bf76",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "orderId",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -384,
+        -624
+      ],
+      "id": "dc905811-f440-48e2-9063-4691f9eeafcc",
+      "name": "Google Sheets – Find Order",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Switch').item.json.chatId }}",
+        "text": "={{`❌ Order not found.  \nPlease check the Order ID and try again.`}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        -544
+      ],
+      "id": "0ef3b132-df94-4ed6-9c1b-9d07d76b5e6a",
+      "name": "Send a text message",
+      "webhookId": "b57de8c6-8096-455c-bc4d-1e0e6c44de3e",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fa1ab976-9072-4e06-9305-76858a9ec564",
+              "leftValue": "={{ $('Google Sheets – Find Order').item.json.status }}",
+              "rightValue": "Pending",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        -736
+      ],
+      "id": "d44f711a-495a-42ae-b1aa-74db59356102",
+      "name": "Is Pending?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=⚠️ Order Cannot Be Completed\n\nThis order is no longer pending.\n\nCurrent Status: {{ $('Google Sheets – Find Order').item.json.status }}\n\nNo changes were made to the order or inventory.",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -688
+      ],
+      "id": "b3b71abe-b36b-47c1-82fa-7814e292e67c",
+      "name": "Send a text message1",
+      "webhookId": "8ffec8ba-0dcc-493e-9018-6bee0c51812a",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "orderId",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        -272
+      ],
+      "id": "3fa5bf63-01c3-46a5-93d2-1f1c79950ee7",
+      "name": "Google Sheets – Find Order to Cancel",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ca2bc539-748d-4025-96e2-fc2d1819f0be",
+              "leftValue": "={{ $json.orderId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -192,
+        -624
+      ],
+      "id": "ba09166f-ec0a-40e0-97e5-4f87fa5f66ce",
+      "name": "Order Found?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ca2bc539-748d-4025-96e2-fc2d1819f0be",
+              "leftValue": "={{ $json.orderId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -160,
+        -272
+      ],
+      "id": "d766ea6a-266b-4260-810e-fb5a314536e0",
+      "name": "Order Found?1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fa1ab976-9072-4e06-9305-76858a9ec564",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Pending",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        80,
+        -288
+      ],
+      "id": "4373bcec-ea17-4e7b-a668-06181f70b590",
+      "name": "Is Pending?1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Switch').item.json.chatId }}",
+        "text": "={{`❌ Order not found.  \nPlease check the Order ID and try again.`}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        -112
+      ],
+      "id": "b6938e89-61fb-4b4f-b217-1c7461b03e29",
+      "name": "Send a text message2",
+      "webhookId": "b57de8c6-8096-455c-bc4d-1e0e6c44de3e",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=⚠️ Order Cannot Be Cancelled\n\nCurrent Status: {{ $json.status }}\n\nOnly pending orders can be cancelled.\nNo changes were made.",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -224
+      ],
+      "id": "910773c8-ddbe-479c-81c1-3ceca5dbf0ba",
+      "name": "Send a text message3",
+      "webhookId": "8ffec8ba-0dcc-493e-9018-6bee0c51812a",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=⚠️ Invalid Command\n\nPlease use one of the following commands:\n\nComplete an order:\ndone ORD-20261111-123\n\nCancel an order:\ncancel ORD-20261111-123\n\nReplace the example Order ID with the actual one.",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        -16
+      ],
+      "id": "97f1caeb-62e0-4300-8528-489ebf2b95dc",
+      "name": "Send a text message4",
+      "webhookId": "dab67305-20c9-4c7b-a456-14d1a2c3f9b8",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "orderId": "={{ $('Google Sheets – Find Order').item.json.orderId }}",
+            "status": "Done"
+          },
+          "matchingColumns": [
+            "orderId"
+          ],
+          "schema": [
+            {
+              "id": "orderId",
+              "displayName": "orderId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "customerName",
+              "displayName": "customerName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        -896
+      ],
+      "id": "89f33508-b459-4905-b598-b7eb390968ce",
+      "name": "Update Order - Done",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "Cancelled",
+            "orderId": "={{ $json.orderId }}"
+          },
+          "matchingColumns": [
+            "orderId"
+          ],
+          "schema": [
+            {
+              "id": "orderId",
+              "displayName": "orderId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "customerName",
+              "displayName": "customerName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        304,
+        -416
+      ],
+      "id": "5cbeaa39-4590-4d31-b8e3-0469a7a190ef",
+      "name": "Update Order - Cancelled",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "HNawdlUhPGxddYf7",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/HNawdlUhPGxddYf7",
+          "cachedResultName": "03 - Inventory Management"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "orderId": "={{ $json.orderId }}",
+            "items": "={{ $json.items }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "orderId",
+              "displayName": "orderId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        336,
+        -880
+      ],
+      "id": "8f12ea7b-e568-417e-97df-4767a962c6a5",
+      "name": "Call '03 - Inventory Management'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3d3b28d0-709c-47f9-99eb-4cb23d2e6309",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -880
+      ],
+      "id": "ad018cc9-89c0-44cf-ba12-3661e71f2715",
+      "name": "Inventory Successful?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').first().json.chatId }}",
+        "text": "=⚠️ Cannot Complete Order\n\nInsufficient inventory:\n\n{{ $json.insufficientItems.map(item => `${item.ingredient}: Required ${item.required}, Available ${item.available}`).join('\\n') }}\n\nOrder remains Pending.\nNo inventory was deducted.",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -592
+      ],
+      "id": "a6ccb532-d77b-4e04-9b4d-7aedbe03d6f4",
+      "name": "Send a text message5",
+      "webhookId": "36231edf-9a91-44a6-8e09-5e953239733c",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "78da9a93-b4e9-42d7-8106-c7c92a5e8d9b",
+              "leftValue": "={{ $json.alreadyProcessed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        -720
+      ],
+      "id": "906a24c1-d3d9-40ed-b1fa-549d07d58c40",
+      "name": "Check Already Processed?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Command').item.json.chatId }}",
+        "text": "=⚠️ Order Requires Manual Review\n\nThis order ({{ $json.orderId }}) has existing stock movements.\n\nNo additional inventory was deducted.\nPlease review the stock movements before retrying.\n\nOrder remains Pending.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -800
+      ],
+      "id": "c8d31997-2dda-4408-8a70-cfe9f5786f37",
+      "name": "Notify - Existing Stock Movements",
+      "webhookId": "7144269b-eaf1-40d5-b7fc-0b0e4804bb5d",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ Order Completed Successfully!\n\n🆔 Order ID: {{ $json.orderId }}\n📦 Order Status: Done\n📊 Inventory: Stock deducted successfully.\n\nThe order has been completed and the inventory has been updated.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -1024
+      ],
+      "id": "f0f0d464-28fe-4f48-ab7b-85b12a85734e",
+      "name": "Send Order Completion Confirmation",
+      "webhookId": "23e08b41-293c-4099-8d27-18ddf8cf7ffc",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=\n❌ Order Cancelled Successfully\n\n🆔 Order ID: {{ $json.orderId }}\n📋 Order Status: Cancelled\n\nThe order has been cancelled successfully.\nNo inventory quantities were deducted.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        -416
+      ],
+      "id": "155dcf6b-ca08-4e7f-93fe-5d4b1a42afe8",
+      "name": "Send Order Cancellation Confirmation",
+      "webhookId": "23e08b41-293c-4099-8d27-18ddf8cf7ffc",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Command": {
+      "main": [
+        [
+          {
+            "node": "Authorize Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize Manager": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message - Unauthorized Access",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets – Find Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets – Find Order to Cancel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets – Find Order": {
+      "main": [
+        [
+          {
+            "node": "Order Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Pending?": {
+      "main": [
+        [
+          {
+            "node": "Call '03 - Inventory Management'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Found?": {
+      "main": [
+        [
+          {
+            "node": "Is Pending?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets – Find Order to Cancel": {
+      "main": [
+        [
+          {
+            "node": "Order Found?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Found?1": {
+      "main": [
+        [
+          {
+            "node": "Is Pending?1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Pending?1": {
+      "main": [
+        [
+          {
+            "node": "Update Order - Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call '03 - Inventory Management'": {
+      "main": [
+        [
+          {
+            "node": "Inventory Successful?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inventory Successful?": {
+      "main": [
+        [
+          {
+            "node": "Update Order - Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Already Processed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Already Processed?": {
+      "main": [
+        [
+          {
+            "node": "Notify - Existing Stock Movements",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order - Done": {
+      "main": [
+        [
+          {
+            "node": "Send Order Completion Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Order - Cancelled": {
+      "main": [
+        [
+          {
+            "node": "Send Order Cancellation Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e15bd013-b813-4cac-90b9-acab3572cb69",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"
+  },
+  "nodeGroups": [],
+  "id": "sQCHw7T4805nTsY3",
+  "tags": []
+}

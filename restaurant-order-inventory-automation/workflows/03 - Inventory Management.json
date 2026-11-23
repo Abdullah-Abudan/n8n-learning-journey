@@ -1,0 +1,795 @@
+{
+  "name": "03 - Inventory Management",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "orderId"
+            },
+            {
+              "name": "items"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1760,
+        -160
+      ],
+      "id": "afbc79e8-487e-49ea-83e6-48bc0c0958e3",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('When Executed by Another Workflow').first().json;\nconst orderId = input.orderId;\nconst itemsText = input.items;\n\nif (!orderId || !itemsText) {\n  throw new Error('Missing orderId or items');\n}\n\nconst products = itemsText.split(',');\n\nconst parsedItems = products.map((item) => {\n  const match = item.trim().match(/^(.+?)\\s*x\\s*(\\d+)$/i);\n\n  if (!match) {\n    throw new Error(`Invalid item format: ${item}`);\n  }\n\n  const product = match[1].trim();\n  const quantity = Number(match[2]);\n\n  if (!product || !Number.isInteger(quantity) || quantity <= 0) {\n    throw new Error(`Invalid product or quantity: ${item}`);\n  }\n\n  return {\n    json: {\n      orderId,\n      product,\n      quantity\n    }\n  };\n});\n\nreturn parsedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        80
+      ],
+      "id": "92859a56-3088-4dd1-afc9-2324868b7666",
+      "name": "Parse Order Items"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1975527348,
+          "mode": "list",
+          "cachedResultName": "Recipes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1975527348"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1072,
+        80
+      ],
+      "id": "8c116818-d3e3-4eef-8dd9-f2fcaa669d17",
+      "name": "Get All Recipes",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const orderItems = $input.all();\nconst recipes = $('Get All Recipes').all();\n\nconst requiredIngredients = {};\n\nfor (const item of orderItems) {\n  const { orderId, product, quantity } = item.json;\n\n  const productRecipes = recipes.filter(\n    recipe => recipe.json.product.trim().toLowerCase()\n      === product.trim().toLowerCase()\n  );\n\n  if (productRecipes.length === 0) {\n    throw new Error(`Recipe not found for: ${product}`);\n  }\n\n  for (const recipe of productRecipes) {\n    const ingredient = recipe.json.ingredient;\n    const quantityPerUnit = Number(recipe.json.quantityPerUnit);\n\n    const totalQuantity = quantity * quantityPerUnit;\n\n    requiredIngredients[ingredient] =\n      (requiredIngredients[ingredient] || 0) + totalQuantity;\n  }\n}\n\nreturn Object.entries(requiredIngredients).map(\n  ([ingredient, quantity]) => ({\n    json: {\n      orderId: orderItems[0].json.orderId,\n      ingredient,\n      quantity\n    }\n  })\n);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        80
+      ],
+      "id": "314a3961-2b95-4fc2-8d3f-a646feab233b",
+      "name": "Calculate Required Ingredients"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1330272364,
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1330272364"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -448,
+        80
+      ],
+      "id": "08b1208a-b4d9-4c49-be69-63c5f5616af4",
+      "name": "Get All Inventory",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const requiredItems = $('Calculate Required Ingredients').all();\nconst inventoryItems = $input.all();\n\nconst results = [];\n\nfor (const required of requiredItems) {\n  const ingredient = required.json.ingredient;\n  const requiredQuantity = Number(required.json.quantity);\n\n  const stockIndex = inventoryItems.findIndex(\n    item => item.json.ingredient.trim().toLowerCase()\n      === ingredient.trim().toLowerCase()\n  );\n\n  if (stockIndex === -1) {\n    results.push({\n      json: {\n        orderId: required.json.orderId,\n        ingredient,\n        requiredQuantity,\n        availableQuantity: 0,\n        rowNumber: null,\n        sufficient: false,\n        reason: 'Ingredient not found in inventory'\n      }\n    });\n    continue;\n  }\n\n  const stock = inventoryItems[stockIndex].json;\n  const availableQuantity = Number(stock.quantity);\n\n  results.push({\n    json: {\n      orderId: required.json.orderId,\n      ingredient,\n      requiredQuantity,\n      availableQuantity,\n      rowNumber: stock.row_number,\n      sufficient: availableQuantity >= requiredQuantity,\n      reason: availableQuantity >= requiredQuantity\n        ? 'Stock available'\n        : 'Insufficient stock'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        80
+      ],
+      "id": "4add15f3-7818-4c3d-8114-6a81db9d19e6",
+      "name": "Validate Stock"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst checks = $input.all();\n\nconst insufficientItems = checks.filter(\n  item => item.json.sufficient === false\n);\n\nconst allAvailable =\n  checks.length > 0 && insufficientItems.length === 0;\n\nreturn checks.map(item => ({\n  json: {\n    ...item.json,\n    allAvailable\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "d7043fb6-c2ad-460b-94d9-fd34362fcc15",
+      "name": "Check Stock Availability"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5cfbf650-5a58-45e8-b149-27f6edda0536",
+              "leftValue": "={{ $json.allAvailable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        192,
+        80
+      ],
+      "id": "fe240aef-177c-4b32-9be7-49af1dc0362f",
+      "name": "Stock Available?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1330272364,
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1330272364"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.rowNumber }}",
+            "quantity": "={{ $json.availableQuantity - $json.requiredQuantity }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "ingredient",
+              "displayName": "ingredient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "unit",
+              "displayName": "unit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -16
+      ],
+      "id": "85ad53b7-f3ae-4d42-971f-4fcc163a2ee5",
+      "name": "Update Inventory",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1168479075,
+          "mode": "list",
+          "cachedResultName": "Stock Movements",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1168479075"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "movementId": "={{ $('Check Stock Availability').item.json.orderId + '-' + $('Check Stock Availability').item.json.ingredient }}",
+            "orderId": "={{ $('Check Stock Availability').item.json.orderId }}",
+            "ingredient": "={{$('Check Stock Availability').item.json.ingredient }}",
+            "quantity": "={{ $('Check Stock Availability').item.json.requiredQuantity }}",
+            "type": "OUT",
+            "createdAt": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "movementId",
+              "displayName": "movementId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "orderId",
+              "displayName": "orderId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ingredient",
+              "displayName": "ingredient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        -16
+      ],
+      "id": "36732b5d-8c7c-4566-b3c6-e6c2de7605b7",
+      "name": "Record Stock Movement",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst isRecovery = data.alreadyProcessed === true;\n\nreturn [{\n  json: {\n    orderId: data.orderId,\n    success: true,\n    alreadyProcessed: isRecovery,\n    message: isRecovery\n      ? 'Previous stock movements verified. No new deduction was made.'\n      : 'Inventory deducted successfully.',\n    movementsRecorded: isRecovery\n      ? undefined\n      : $input.all().length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -368
+      ],
+      "id": "388da743-4258-4f96-bde7-caeb9fa5ad86",
+      "name": "Return Success"
+    },
+    {
+      "parameters": {
+        "jsCode": "const checks = $input.all();\n\nconst insufficientItems = checks\n  .filter(item => !item.json.sufficient)\n  .map(item => ({\n    ingredient: item.json.ingredient,\n    required: item.json.requiredQuantity,\n    available: item.json.availableQuantity\n  }));\n\nreturn [{\n  json: {\n    success: false,\n    message: 'Insufficient stock',\n    insufficientItems\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        224
+      ],
+      "id": "34489264-0923-4c6f-b49c-c95fd762547b",
+      "name": "Return Failure"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1168479075,
+          "mode": "list",
+          "cachedResultName": "Stock Movements",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1168479075"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "orderId",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1584,
+        -160
+      ],
+      "id": "37e87064-fc0e-45a9-80bc-a11469388449",
+      "name": "Check Existing Stock Movements",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "16137225-9302-46e2-afb8-24498a0b596c",
+              "leftValue": "={{ $json.movementId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1392,
+        -160
+      ],
+      "id": "2c4ea66f-d50b-4489-b27b-2aea8e09ae29",
+      "name": "IF: Existing Movement?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const orderId = $('When Executed by Another Workflow').first().json.orderId;\n\nreturn [{\n  json: {\n    success: false,\n    alreadyProcessed: true,\n    orderId,\n    message: 'Existing stock movements found. No additional deduction was made. Manual review is required.'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -240
+      ],
+      "id": "6da2ce5e-586b-4b3e-a93a-ca5eb7168fe4",
+      "name": "Return Already Processed"
+    },
+    {
+      "parameters": {
+        "jsCode": "const orderInput = $('When Executed by Another Workflow').first().json;\nconst orderId = orderInput.orderId;\n\nconst movements = $('Check Existing Stock Movements').all()\n  .map(item => item.json);\n\nconst recipes = $('Get All Recipes - Recovery').all()\n  .map(item => item.json);\n\nfunction result(success, message) {\n  return [{\n    json: {\n      success,\n      alreadyProcessed: true,\n      orderId,\n      message\n    }\n  }];\n}\n\ntry {\n  if (!orderId || !orderInput.items || movements.length === 0) {\n    return result(false, 'Missing order data or stock movements. Manual review is required.');\n  }\n\n  // Parse the original order items\n  const products = orderInput.items.split(',');\n  const parsedItems = products.map(item => {\n    const match = item.trim().match(/^(.+?)\\s*x\\s*(\\d+)$/i);\n\n    if (!match) {\n      throw new Error(`Invalid order item: ${item}`);\n    }\n\n    return {\n      product: match[1].trim(),\n      quantity: Number(match[2])\n    };\n  });\n\n  // Calculate the expected ingredient quantities\n  const expected = {};\n\n  for (const item of parsedItems) {\n    const productRecipes = recipes.filter(recipe =>\n      String(recipe.product || '').trim().toLowerCase() ===\n      item.product.toLowerCase()\n    );\n\n    if (productRecipes.length === 0) {\n      throw new Error(`Recipe not found for ${item.product}`);\n    }\n\n    for (const recipe of productRecipes) {\n      const ingredient = String(recipe.ingredient || '').trim();\n      const quantityPerUnit = Number(recipe.quantityPerUnit);\n\n      if (!ingredient || !Number.isFinite(quantityPerUnit) || quantityPerUnit <= 0) {\n        throw new Error('Invalid recipe data');\n      }\n\n      expected[ingredient] =\n        (expected[ingredient] || 0) + item.quantity * quantityPerUnit;\n    }\n  }\n\n  // Validate and total the existing stock movements\n  const actual = {};\n  const movementIds = new Set();\n\n  for (const movement of movements) {\n    if (\n      movement.orderId !== orderId ||\n      String(movement.type || '').trim().toUpperCase() !== 'OUT' ||\n      !movement.movementId ||\n      movementIds.has(movement.movementId)\n    ) {\n      throw new Error('Invalid or duplicate stock movement found');\n    }\n\n    movementIds.add(movement.movementId);\n\n    const ingredient = String(movement.ingredient || '').trim();\n    const quantity = Number(movement.quantity);\n\n    if (!ingredient || !Number.isFinite(quantity) || quantity <= 0) {\n      throw new Error('Invalid stock movement data');\n    }\n\n    actual[ingredient] = (actual[ingredient] || 0) + quantity;\n  }\n\n  // Compare expected and actual quantities\n  const ingredients = new Set([\n    ...Object.keys(expected),\n    ...Object.keys(actual)\n  ]);\n\n  for (const ingredient of ingredients) {\n    const expectedKey = Object.keys(expected).find(\n      key => key.toLowerCase() === ingredient.toLowerCase()\n    );\n\n    const actualKey = Object.keys(actual).find(\n      key => key.toLowerCase() === ingredient.toLowerCase()\n    );\n\n    const expectedQuantity = expectedKey ? expected[expectedKey] : 0;\n    const actualQuantity = actualKey ? actual[actualKey] : 0;\n\n    if (Math.abs(expectedQuantity - actualQuantity) > 0.000001) {\n      throw new Error(`Quantity mismatch for ${ingredient}`);\n    }\n  }\n\n  return result(\n    true,\n    'Existing stock movements match the order. No additional deduction was made.'\n  );\n\n} catch (error) {\n  return result(\n    false,\n    `${error.message}. Manual review is required.`\n  );\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -368
+      ],
+      "id": "ed131d7b-0e62-409d-996a-b0b3e43ab192",
+      "name": "Validate Existing Stock Movements"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1975527348,
+          "mode": "list",
+          "cachedResultName": "Recipes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=1975527348"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -752,
+        -368
+      ],
+      "id": "6088abd2-afce-4c82-a486-6f052943f37a",
+      "name": "Get All Recipes - Recovery",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "83a23c62-b398-498a-9089-a6814e346db7",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -96,
+        -368
+      ],
+      "id": "8d9d6400-4bd3-405c-8e3e-2a7650bc47e4",
+      "name": "Existing Movements Valid?"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "orderId": "ORD-101",
+          "items": "Burger x2, Burger with Cheese x1"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Stock Movements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Order Items": {
+      "main": [
+        [
+          {
+            "node": "Calculate Required Ingredients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Recipes": {
+      "main": [
+        [
+          {
+            "node": "Parse Order Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Required Ingredients": {
+      "main": [
+        [
+          {
+            "node": "Get All Inventory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Inventory": {
+      "main": [
+        [
+          {
+            "node": "Validate Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Stock": {
+      "main": [
+        [
+          {
+            "node": "Check Stock Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Stock Availability": {
+      "main": [
+        [
+          {
+            "node": "Stock Available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock Available?": {
+      "main": [
+        [
+          {
+            "node": "Update Inventory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Inventory": {
+      "main": [
+        [
+          {
+            "node": "Record Stock Movement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Stock Movement": {
+      "main": [
+        [
+          {
+            "node": "Return Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Stock Movements": {
+      "main": [
+        [
+          {
+            "node": "IF: Existing Movement?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Existing Movement?": {
+      "main": [
+        [
+          {
+            "node": "Get All Recipes - Recovery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get All Recipes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Recipes - Recovery": {
+      "main": [
+        [
+          {
+            "node": "Validate Existing Stock Movements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Existing Stock Movements": {
+      "main": [
+        [
+          {
+            "node": "Existing Movements Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existing Movements Valid?": {
+      "main": [
+        [
+          {
+            "node": "Return Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Already Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Already Processed": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c30eb25a-6346-4a0e-8efc-d47ec50018aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"
+  },
+  "nodeGroups": [],
+  "id": "HNawdlUhPGxddYf7",
+  "tags": []
+}

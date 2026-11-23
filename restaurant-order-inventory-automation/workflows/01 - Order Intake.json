@@ -1,0 +1,381 @@
+{
+  "name": "01 - Order Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "New Order",
+        "formDescription": "Submit a new restaurant order",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Customer Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Order Items",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Notes",
+              "fieldType": "textarea",
+              "defaultValue": "-"
+            }
+          ]
+        },
+        "options": {
+          "path": "New Order"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1376,
+        -32
+      ],
+      "id": "bf59dd2b-bfc7-4884-a628-4c593d10db8d",
+      "name": "New Order",
+      "webhookId": "1b7ecafa-d3a9-4ec3-8993-e5fae3bfba2e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "28e85919-ac17-495e-a28b-39c2a67f33b2",
+              "name": "orderId",
+              "value": "={{ 'ORD-' + $now.toFormat('yyyy-MM-dd') + '-' + $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "defc8ed8-4f7d-4282-80ef-d851d7b11bb5",
+              "name": "=customerName",
+              "value": "={{ $json[\"Customer Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "352c6d2b-05e4-470e-bdba-1c53a5a5c583",
+              "name": "phone",
+              "value": "={{ $json[\"Phone Number\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7c8b05e6-69a3-4d54-8ab1-b4a813295410",
+              "name": "items",
+              "value": "={{ $json[\"Order Items\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f8d8ccd7-bffe-42f6-92d3-f66e42d18231",
+              "name": "notes",
+              "value": "={{ $json.Notes }}",
+              "type": "string"
+            },
+            {
+              "id": "a255d7a1-30b2-4445-907b-47c8c8c67a83",
+              "name": "status",
+              "value": "=Pending",
+              "type": "string"
+            },
+            {
+              "id": "49c7dd5c-4649-4963-b6ba-07c0d28a8d16",
+              "name": "createdAt",
+              "value": "={{ $json.submittedAt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1152,
+        -32
+      ],
+      "id": "87b04c1a-3064-4cf7-af79-4ca93d76613b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7643943d-a419-44a5-9141-770c97966d34",
+              "leftValue": "={{ $json.customerName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c23a7563-6014-4e41-80b9-efc5deed37f8",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5a713057-05a6-4cc9-b4f9-505d736a2c23",
+              "leftValue": "={{ $json.items }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -928,
+        -32
+      ],
+      "id": "d8383a9e-3ffc-40e4-9b6b-c33fd044d88f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc",
+          "mode": "list",
+          "cachedResultName": "RestaurantFlow - Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10IcJ7aPP3Ti7pZpYjF0kBkEJ7MVjNbItR9zaeDYSDzc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "orderId": "={{ $json.orderId }}",
+            "customerName": "={{ $json.customerName }}",
+            "phone": "={{ $json.phone }}",
+            "items": "={{ $json.items }}",
+            "notes": "={{ $json.notes }}",
+            "status": "={{ $json.status }}",
+            "createdAt": "={{ $json.createdAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "orderId",
+              "displayName": "orderId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customerName",
+              "displayName": "customerName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "items",
+              "displayName": "items",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -704,
+        -48
+      ],
+      "id": "d36123c7-949d-44bf-8c9a-17d5646efd29",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dOGPssnCGh9tXyyA",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -1392,
+        208
+      ],
+      "id": "87f92cc8-2377-4dfd-bbc9-9029d77c87eb",
+      "name": "Telegram Trigger",
+      "webhookId": "b26bf5c2-2d8d-4c87-a68e-55705bdcc700",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "601624105",
+        "text": "={{\n`🍽️ RESTAURANTFLOW\nNew Order Received\n\nOrder: ${$('Edit Fields').item.json.orderId}\nStatus: PENDING\n\nCUSTOMER\n${$('Edit Fields').item.json.customerName}\n${$('Edit Fields').item.json.phone}\n\nORDER SUMMARY\n${$('Edit Fields').item.json.items}\n\n${$('Edit Fields').item.json.notes ? 'NOTE\\n' + $('Edit Fields').item.json.notes + '\\n' : ''}Received: ${$('Edit Fields').item.json.createdAt}`\n}}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "c5639c4d-8715-4a39-87bc-4f2915fcb73a",
+      "name": "Send a text message",
+      "webhookId": "458c612e-0705-4d03-bcc1-9beeb9eadff2",
+      "credentials": {
+        "telegramApi": {
+          "id": "n3S2EPgVEeQkV34w",
+          "name": "RestaurantFlowOpsBot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "New Order": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8bca7318-6c63-48b8-bf66-87066fbe7756",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "816f7764535f1d1b4c1cb1c7745357902ec314060777aedb7313fcad2400534a"
+  },
+  "nodeGroups": [],
+  "id": "VUrpcl6GNc2k1Z2M",
+  "tags": []
+}
